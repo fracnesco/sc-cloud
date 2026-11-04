@@ -1,0 +1,22 @@
+TITLE:: CloudView
+summary:: Cloud's display
+categories:: Libraries>Cloud
+related:: Classes/Cloud, Classes/FxParamView, Classes/FxParamPanel
+
+DESCRIPTION::
+What link::Classes/FxParamPanel:: puts at the top of Cloud's window. In it, drag left and right for the position, up and down for the pitch; the wheel for the scatter in time. The dots are drawn from the settings: they say what the cloud is doing, they do not report each grain the server makes.
+
+It draws from the object's settings and the replies its meters bring, so it is only live while the window is running; link::Classes/FxParamView:: has the rest.
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: unit
+The link::Classes/Cloud::.
+ARGUMENT:: parent
+A view to go in.
+
+INSTANCEMETHODS::
+
+METHOD:: hint
+What the hint bar says over it.

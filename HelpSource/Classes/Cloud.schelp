@@ -1,0 +1,71 @@
+TITLE:: Cloud
+summary:: a live granulator with pitch scatter, reverse, feedback and freeze, as a UGen and as an object, with a window
+categories:: Libraries>Cloud
+related:: Classes/FxParamUnit, Classes/CloudView, Classes/FxUnit, Classes/FxChain
+
+DESCRIPTION::
+A live granulator - what you play turns into a cloud of itself, and freeze keeps it there - running anywhere a UGen does, with a window.
+
+code::
+Ndef(\gtr, { Cloud.ar(Pluck.ar(WhiteNoise.ar(0.2 ! 2), Impulse.kr(1), 0.02, 0.005, 2), \cloud) }).play;
+
+c = Cloud(Ndef(\gtr), \cloud);
+c.gui;
+c.density = 40; c.grainSize = 0.12;
+c.pitchScatter = 7; c.quantize = \fifth;
+c.frozen = true;                  // stop listening, keep reading
+c.preset = 'shimmer haze';
+::
+
+The input goes into 4 seconds of buffer per channel, and grains of it are read back: from code::position:: seconds ago, give or take code::scatter::, at a code::pitch::, give or take code::pitchScatter::, optionally held to a scale by code::quantize::. code::reverse:: says how many play backwards. code::chaos:: goes from grains like clockwork, which gives the cloud a pitch of its own, to grains at random.
+
+code::feedback:: puts the cloud back in the buffer, so it can grow out of itself. code::frozen:: stops writing, and what is in there goes on being read for as long as you like.
+
+Each channel has its own buffer and its own grains, so a stereo cloud is wide. A forward grain faster than the write head starts far enough back never to catch it up, which is the one thing that would otherwise click. There can be 256 grains at once on a channel: code::density:: gives way if the grains are too long for that.
+
+subsection:: The object and the UGen
+It is an link::Classes/FxParamUnit::, so everything that class documents works here: code::Cloud.ar(in, name)::, code::Cloud(node, name)::, code::Cloud.onBus(bus, numChannels)::, presets, the clipboard, code::gui::. Its window's display is a link::Classes/CloudView::.
+
+subsection:: Parameters
+Each is a property of the object: read it, set it. The numbers are in the order of the node's control, which is what saved node maps carry. Internal ones without a knob, if any, are described above.
+
+table::
+## strong::parameter:: || strong::range:: || strong::default:: || strong::what it does::
+## code::density:: || 0.5 .. 200 /s || 24 || how many grains a second start
+## code::grainSize:: || 0.005 .. 1 s || 0.14 || how long a grain lasts
+## code::sizeScatter:: || 0 .. 3 oct || 0 || how far a grain's length may stray, in octaves
+## code::chaos:: || 0 .. 1 || 0.5 || 0 starts them like clockwork, a pitch of its own; 1 at random
+## code::position:: || 0 .. 3.5 s || 0.2 || how long ago the grains are read from
+## code::scatter:: || 0 .. 3.5 s || 0.3 || how much further back they may stray
+## code::frozen:: || on / off || false || stop listening: go on reading what is in the buffer
+## code::pitch:: || -24 .. 24 st || 0 || every grain, in semitones
+## code::pitchScatter:: || 0 .. 24 st || 0 || how far a grain's pitch may stray
+## code::quantize:: || free semitone fifth octave || free || hold each grain's pitch to steps of this
+## code::reverse:: || 0 .. 1 || 0 || how many grains play backwards
+## code::feedback:: || 0 .. 0.98 || 0 || how much of the cloud goes back in the buffer
+## code::damp:: || 200 .. 20000 Hz || 16000 || a low pass on the cloud
+## code::width:: || 0 .. 2 || 1 || how far apart the sides are
+## code::mix:: || 0 .. 1 || 0.5 || how much of the effect goes out, against the dry signal
+## code::output:: || -36 .. 24 dB || 0 || the level of the whole thing, in dB
+::
+
+CLASSMETHODS::
+
+METHOD:: maxTime
+the seconds in the buffer: 4.
+
+METHOD:: maxGrains
+the most grains at once on a channel: 256.
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+s.boot;
+Ndef(\gtr, { Cloud.ar(Pluck.ar(WhiteNoise.ar(0.2 ! 2), Impulse.kr(1), 0.02, 0.005, 2), \cloud) }).play;
+c = Cloud(Ndef(\gtr), \cloud);
+c.gui;
+c.preset = Cloud.presetNames.choose;
+c.free; Ndef(\gtr).clear;
+::
