@@ -25,7 +25,42 @@ Cloud : FxParamUnit {
 	*controlName { ^\cloud }
 	*hasTail { ^true }
 	*displayClass { ^CloudView }
-	*windowSize { ^Point(860, 500) }
+	*windowSize { ^Point(950, 600) }
+
+	// The family is the granulator: the display is the buffer as time against
+	// pitch with the grain window as a box you drag, beside a map of grain size
+	// against grains a second (CloudView); freeze is a big lit pad. Sixteen
+	// controls, one page: what the buffer holds, where in it, the grains, their
+	// pitch, then the output.
+	*guiClass { ^FxDeviceGUI }
+	*panelClass { ^CloudPanel }
+
+	// grains: the box and the dots, the grains card, the hero knobs
+	*identityColour { ^FxPalette.identity(\granular) }
+
+	*devicePages {
+		^[
+			\cloud -> [
+				(title: "buffer", keys: [[\freezeOn, \feedback]]),
+				(title: "where", keys: [\position, \scatter]),
+				(title: "grains", colour: \identity, keys: [[\grains, \chaos], [\grainSize, \sizeScatter]]),
+				(title: "pitch", keys: [[\pitch, \pitchScatter], [\quantize, \backwards]])
+			]
+		]
+	}
+
+	// frozen, the buffer is written with what is already in it: feedback does nothing
+	*isActive { |key, unit|
+		if (key == \feedback) { ^unit.get(\freezeOn) != true };
+		^true
+	}
+
+	// parameters renamed on 2026-11-08 so each is a free Tidal word (old -> new):
+	// old presets, sessions and code still reach them
+	*renamed { ^(density: \grains, reverse: \backwards, frozen: \freezeOn) }
+
+	// what a Tidal pattern may move through SuperDirtGUI, event by event
+	*tidalParams { ^#[\grains, \grainSize, \sizeScatter, \chaos, \position, \scatter, \freezeOn, \pitch, \pitchScatter, \backwards, \feedback, \damp, \width, \mix] }
 
 	*params {
 		// labels, sections, sizes and hints are the window's (sc-fx-ui, 2026-11-09);
