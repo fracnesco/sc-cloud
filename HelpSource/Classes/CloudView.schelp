@@ -1,12 +1,38 @@
 TITLE:: CloudView
 summary:: Cloud's display
 categories:: Libraries>Cloud
-related:: Classes/Cloud, Classes/FxParamView, Classes/FxParamPanel
+related:: Classes/Cloud, Classes/CloudPanel, Classes/FxParamView, Classes/FxDevicePanel
 
 DESCRIPTION::
-What link::Classes/FxParamPanel:: puts at the top of Cloud's window. In it, drag left and right for the position, up and down for the pitch; the wheel for the scatter in time. The dots are drawn from the settings: they say what the cloud is doing, they do not report each grain the server makes.
+What link::Classes/FxDevicePanel:: puts at the top of Cloud's window, in two panes.
 
-It draws from the object's settings and the replies its meters bring, so it is only live while the window is running; link::Classes/FxParamView:: has the rest.
+strong::cloud:: is the buffer: time runs from now, on the right, back to 4 seconds ago on the left (the last second gets most of the room), pitch goes up in semitones.
+
+table::
+## strong::the box:: || where grains may fall: from code::position:: back to code::position:: + code::scatter:: (spray), at code::pitch:: give or take code::pitchScatter:: (spread); with code::quantize:: on, the steps the grains are held to as lines across it
+## strong::the dots:: || grains drawn from the same numbers as the server's, each with a streak from where it started to where it reads now (a grain moves through the buffer at its own speed while the write head moves at one); hollow ones play backwards; a grain reading silence is dim
+## strong::buffer:: || along the bottom, what went in while the window was open (the input and the feedback), the part the grains read shaded; the write head at now, blue while it listens, stopped and orange while frozen
+## strong::feedback:: || a dashed line from the box back to the write head, as strong as code::feedback::
+::
+
+strong::grains:: is a map of grain size (along) against grains a second (up), both on log scales: the dot is the setting, its bar how far code::sizeScatter:: lets the size stray, the diagonals how many grains sound at once (under 1 there are gaps, past 8 it is smooth), the shaded corner where the server holds the rate down.
+
+It says what the cloud is doing; it does not report each grain the server makes.
+
+table::
+## strong::in the display:: || strong::does::
+## drag the box || along: code::position::, up and down: code::pitch::
+## drag its left edge || the spray (code::scatter::)
+## drag its top or bottom edge || the spread (code::pitchScatter::)
+## the wheel || the spray; with alt, or on the top or bottom edge, the spread
+## drag the buffer strip || code::position::
+## drag the dot in the grains map || along: code::grainSize::, up: code::grains::
+## the wheel there || code::sizeScatter::
+## shift || fine, a tenth as far
+## double click || back to the default of what is under it
+::
+
+It draws from the object's settings and the replies its meters bring (whether it is frozen, the peak of what was written), so the buffer strip is only live while the window is running; link::Classes/FxParamView:: has the rest.
 
 CLASSMETHODS::
 
@@ -16,7 +42,32 @@ The link::Classes/Cloud::.
 ARGUMENT:: parent
 A view to go in.
 
+METHOD:: effectiveRate
+The grains a second the server really runs: code::grains::, held down when the grains are too long for 256 at once.
+ARGUMENT:: unit
+The link::Classes/Cloud::.
+
 INSTANCEMETHODS::
 
 METHOD:: hint
-What the hint bar says over it.
+What the hint bar says over it: which part is under the pointer, its gestures and the values they move. It also lights the knobs of that part.
+ARGUMENT:: x
+Where the pointer is, across the view.
+ARGUMENT:: y
+Where the pointer is, down the view.
+
+METHOD:: hot
+The parameter whose knob the pointer is on, or nil: its part of the display is drawn lit. Set by link::Classes/CloudPanel::.
+
+METHOD:: panel
+The link::Classes/CloudPanel:: it sits in, so it can light the knobs.
+
+METHOD:: levelAt
+What the buffer holds this many seconds ago, as an amplitude, from the replies since the window opened; nil before the first.
+ARGUMENT:: ago
+Seconds before now.
+
+METHOD:: levelsArrived
+Called by the panel on every meter reply: the write head moves on, unless frozen, and every cell it passed gets the reply's peak.
+ARGUMENT:: now
+The reply's time; code::Main.elapsedTime:: unless a check gives one.

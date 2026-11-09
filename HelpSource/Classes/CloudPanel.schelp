@@ -1,0 +1,37 @@
+TITLE:: CloudPanel
+summary:: Cloud's device panel
+categories:: Libraries>Cloud
+related:: Classes/Cloud, Classes/CloudView, Classes/FxDevicePanel
+
+DESCRIPTION::
+The link::Classes/FxDevicePanel:: every effect of the family has, plus one thing: it hands the display the panel, so hovering a part of the link::Classes/CloudView:: lights the knobs that set it, and hovering one of those knobs lights its part of the display. code::Cloud.panelClass:: answers it, so code::c.gui:: and code::c.panel(view):: both use it.
+
+code::
+c = Cloud.new;
+c.gui;                                   // the window, with a CloudPanel in it
+
+(
+// or the same panel in a window of yours
+w = Window("cloud", Rect(100, 100, 950, 600));
+p = c.panel(w.view);
+w.view.layout = VLayout(p.view);
+p.running = true;                        // meters on while it shows
+w.onClose = { p.remove };
+w.front;
+);
+::
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: unit
+The link::Classes/Cloud::.
+ARGUMENT:: parent
+A view to go in.
+
+INSTANCEMETHODS::
+
+METHOD:: hints
+The hint bar: the knobs the display draws also tell the display while the pointer is on them.
+ARGUMENT:: bar
+An link::Classes/FxHintBar::.

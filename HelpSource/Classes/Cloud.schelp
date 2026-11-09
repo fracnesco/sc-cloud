@@ -1,7 +1,7 @@
 TITLE:: Cloud
 summary:: a live granulator with pitch scatter, reverse, feedback and freeze, as a UGen and as an object, with a window
 categories:: Libraries>Cloud
-related:: Classes/FxParamUnit, Classes/CloudView, Classes/FxUnit, Classes/FxChain
+related:: Classes/FxParamUnit, Classes/CloudView, Classes/CloudPanel, Classes/FxDevicePanel, Classes/FxChain
 
 DESCRIPTION::
 A live granulator - what you play turns into a cloud of itself, and freeze keeps it there - running anywhere a UGen does, with a window.
@@ -11,17 +11,17 @@ Ndef(\gtr, { Cloud.ar(Pluck.ar(WhiteNoise.ar(0.2 ! 2), Impulse.kr(1), 0.02, 0.00
 
 c = Cloud(Ndef(\gtr), \cloud);
 c.gui;
-c.density = 40; c.grainSize = 0.12;
+c.grains = 40; c.grainSize = 0.12;
 c.pitchScatter = 7; c.quantize = \fifth;
-c.frozen = true;                  // stop listening, keep reading
+c.freezeOn = true;                  // stop listening, keep reading
 c.preset = 'shimmer haze';
 ::
 
-The input goes into 4 seconds of buffer per channel, and grains of it are read back: from code::position:: seconds ago, give or take code::scatter::, at a code::pitch::, give or take code::pitchScatter::, optionally held to a scale by code::quantize::. code::reverse:: says how many play backwards. code::chaos:: goes from grains like clockwork, which gives the cloud a pitch of its own, to grains at random.
+The input goes into 4 seconds of buffer per channel, and grains of it are read back: from code::position:: seconds ago, give or take code::scatter::, at a code::pitch::, give or take code::pitchScatter::, optionally held to a scale by code::quantize::. code::backwards:: says how many play backwards. code::chaos:: goes from grains like clockwork, which gives the cloud a pitch of its own, to grains at random.
 
-code::feedback:: puts the cloud back in the buffer, so it can grow out of itself. code::frozen:: stops writing, and what is in there goes on being read for as long as you like.
+code::feedback:: puts the cloud back in the buffer, so it can grow out of itself. code::freezeOn:: stops writing, and what is in there goes on being read for as long as you like.
 
-Each channel has its own buffer and its own grains, so a stereo cloud is wide. A forward grain faster than the write head starts far enough back never to catch it up, which is the one thing that would otherwise click. There can be 256 grains at once on a channel: code::density:: gives way if the grains are too long for that.
+Each channel has its own buffer and its own grains, so a stereo cloud is wide. A forward grain faster than the write head starts far enough back never to catch it up, which is the one thing that would otherwise click. There can be 256 grains at once on a channel: code::grains:: gives way if the grains are too long for that.
 
 subsection:: The object and the UGen
 It is an link::Classes/FxParamUnit::, so everything that class documents works here: code::Cloud.ar(in, name)::, code::Cloud(node, name)::, code::Cloud.onBus(bus, numChannels)::, presets, the clipboard, code::gui::. Its window's display is a link::Classes/CloudView::.
@@ -31,23 +31,28 @@ Each is a property of the object: read it, set it. The numbers are in the order 
 
 table::
 ## strong::parameter:: || strong::range:: || strong::default:: || strong::what it does::
-## code::density:: || 0.5 .. 200 /s || 24 || how many grains a second start
-## code::grainSize:: || 0.005 .. 1 s || 0.14 || how long a grain lasts
-## code::sizeScatter:: || 0 .. 3 oct || 0 || how far a grain's length may stray, in octaves
-## code::chaos:: || 0 .. 1 || 0.5 || 0 starts them like clockwork, a pitch of its own; 1 at random
-## code::position:: || 0 .. 3.5 s || 0.2 || how long ago the grains are read from
-## code::scatter:: || 0 .. 3.5 s || 0.3 || how much further back they may stray
-## code::frozen:: || on / off || false || stop listening: go on reading what is in the buffer
-## code::pitch:: || -24 .. 24 st || 0 || every grain, in semitones
-## code::pitchScatter:: || 0 .. 24 st || 0 || how far a grain's pitch may stray
-## code::quantize:: || free semitone fifth octave || free || hold each grain's pitch to steps of this
-## code::reverse:: || 0 .. 1 || 0 || how many grains play backwards
-## code::feedback:: || 0 .. 0.98 || 0 || how much of the cloud goes back in the buffer
-## code::damp:: || 200 .. 20000 Hz || 16000 || a low pass on the cloud
-## code::width:: || 0 .. 2 || 1 || how far apart the sides are
+## code::grains:: || 0.5 .. 200 /s || 24 || how many grains a second start - or drag the dot in the display's grains map up and down
+## code::grainSize:: || 0.005 .. 1 s || 0.14 || how long a grain lasts - or drag the dot in the grains map along
+## code::sizeScatter:: || 0 .. 3 oct || 0 || how far a grain's length may stray, in octaves either way - or the wheel on the grains map
+## code::chaos:: || 0 .. 1 || 0.5 || 0 starts the grains like clockwork, which gives the cloud a pitch of its own; 1 at random
+## code::position:: || 0 .. 3.5 s || 0.2 || how long ago the grains are read from - or drag the box in the display along
+## code::scatter:: || 0 .. 3.5 s || 0.3 || how much further back a grain may start - or drag the box's left edge, or the wheel in the display
+## code::freezeOn:: || on / off || false || stop listening: the buffer holds what is in it and the grains go on reading it - hold the pad for a moment's freeze
+## code::pitch:: || -24 .. 24 st || 0 || every grain, in semitones - or drag the box in the display up and down
+## code::pitchScatter:: || 0 .. 24 st || 0 || how far a grain's pitch may stray either way - or drag the box's top or bottom edge
+## code::quantize:: || free semitone fifth octave || free || hold each grain's pitch (and the pitch itself) to steps of a semitone, a fifth or an octave
+## code::backwards:: || 0 .. 1 || 0 || how many grains play backwards - drawn hollow in the display
+## code::feedback:: || 0 .. 0.98 || 0 || how much of the cloud goes back into the buffer, so it grows out of itself - nothing while frozen
+## code::damp:: || 200 .. 20000 Hz || 16000 || a low pass on the cloud (and on what feedback puts back)
+## code::width:: || 0 .. 2 || 1 || how far apart the sides are: 0 mono, 100 % as it is, 200 % wider
 ## code::mix:: || 0 .. 1 || 0.5 || how much of the effect goes out, against the dry signal
 ## code::output:: || -36 .. 24 dB || 0 || the level of the whole thing, in dB
 ::
+
+subsection:: The window
+code::c.gui:: opens it, code::c.panel(view):: puts the same panel in a view of yours (a link::Classes/CloudPanel::). The display is a link::Classes/CloudView:: - the buffer with the grain window as a box you drag, and a map of grain size against grains a second - with the in and out meters beside it. One row of cards under it: strong::buffer:: (the code::freeze:: pad, feedback), strong::where:: (position, spray), strong::grains:: (grains a second and size, the two big knobs, chaos, vary), strong::pitch:: (pitch, spread, steps, backwards), strong::output:: (damp, width, mix, output). In the window code::scatter:: is called spray, code::pitchScatter:: spread and code::quantize:: steps; feedback is dimmed while frozen, when nothing is written.
+
+The node also reports, with its meters, whether it is frozen and the peak of what goes into the buffer since the last reply: the display's buffer strip.
 
 CLASSMETHODS::
 

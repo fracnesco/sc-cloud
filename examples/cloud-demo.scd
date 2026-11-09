@@ -16,9 +16,9 @@ Ndef(\gtr, { Cloud.ar(Pluck.ar(WhiteNoise.ar(0.2 ! 2), Impulse.kr(1), 0.02, 0.00
 
 // ---- 2. settings: each is a property, each moves the window
 (
-~c.density = 40; ~c.grainSize = 0.12;
+~c.grains = 40; ~c.grainSize = 0.12;
 ~c.pitchScatter = 7; ~c.quantize = \fifth;
-~c.frozen = true;                  // stop listening, keep reading
+~c.freezeOn = true;                  // stop listening, keep reading
 ~c.preset = 'shimmer haze';
 )
 
