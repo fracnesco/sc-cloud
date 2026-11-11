@@ -2,6 +2,8 @@
 
 **A live granulator - what you play turns into a cloud of itself, and freeze keeps it there - running anywhere a UGen does, with a window.** A SuperCollider extension.
 
+![Cloud's window](images/cloud.png)
+
 ```supercollider
 s.boot;
 Ndef(\gtr, { Cloud.ar(Pluck.ar(WhiteNoise.ar(0.2 ! 2), Impulse.kr(1), 0.02, 0.005, 2), \cloud) }).play;
@@ -129,6 +131,7 @@ Every parameter is a property: `c.grains`, `c.grains = ...`. These also work by 
 | [examples/cloud-demo.scd](examples/cloud-demo.scd) | a walkthrough, one block at a time |
 | [install.scd](install.scd) | the symlink, a check, an uninstall |
 | [sc-cloud.quark](sc-cloud.quark) | the quark manifest |
+| [images/](images/) | the screenshots in this README |
 
 ## License
 
