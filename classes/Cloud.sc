@@ -50,6 +50,9 @@ Cloud : FxParamUnit {
 	}
 
 	// frozen, the buffer is written with what is already in it: feedback does nothing
+	// a card in a strip (FxDeviceCard)
+	*cardKeys { ^#[\grains, \grainSize, \pitch, \mix, \freezeOn] }
+
 	*isActive { |key, unit|
 		if (key == \feedback) { ^unit.get(\freezeOn) != true };
 		^true
