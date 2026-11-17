@@ -15,9 +15,10 @@
 // ln -s is macOS and Linux. On Windows, use the quark, or copy this
 // folder into Platform.userExtensionDir by hand - .openOS opens it.
 //
-// Cloud is built on sc fx kit (../sc fx kit), which is built on ParaEQ
-// (../sc EQ), so both have to be installed too. If they are sitting next
-// to this folder, this script links them as well.
+// Cloud is built on sc fx kit (../sc fx kit), so that has to be installed too.
+// If it is sitting next to this folder, this script links it as well. An
+// sc fx kit from before November 2026 does not hold FxUnit yet, and an sc EQ
+// from before then holds it a second time: update both if you have them.
 
 (
 var link, src, parent, dst;
@@ -53,13 +54,19 @@ link = { |from, to, what, done|
 	};
 };
 
-// what it is built on first - without them the class library will not compile
-link.value(parent +/+ "sc EQ", Platform.userExtensionDir +/+ "ParaEQ", "ParaEQ", {
-	link.value(parent +/+ "sc fx kit", Platform.userExtensionDir +/+ "FxKit", "FxKit", {
-		link.value(src, dst, "Cloud", {
-			"".postln;
-			"Now recompile the class library: ctrl/cmd + shift + L".postln;
-		});
+// an sc EQ from before the framework moved holds it a second time
+[parent +/+ "sc EQ", Platform.userExtensionDir +/+ "ParaEQ"].do { |dir|
+	if (File.exists(dir +/+ "classes/FxUnit.sc")) {
+		("Cloud: % is an older sc EQ that still holds FxUnit, which lives in sc fx kit"
+			"\n  now. Update it (git pull) or the class library will not compile.".format(dir)).warn;
+	};
+};
+
+// what it is built on first - without it the class library will not compile
+link.value(parent +/+ "sc fx kit", Platform.userExtensionDir +/+ "FxKit", "FxKit", {
+	link.value(src, dst, "Cloud", {
+		"".postln;
+		"Now recompile the class library: ctrl/cmd + shift + L".postln;
 	});
 });
 )
@@ -73,7 +80,7 @@ var missing = [\Cloud, \CloudView]
 if (missing.notEmpty) {
 	("Cloud is not compiled - % is missing."
 		"\n  Recompile the class library, ctrl/cmd + shift + L, and check the"
-		"\n  post window for compile errors - a missing ParaEQ or FxKit is the usual reason."
+		"\n  post window for compile errors - a missing or old FxKit is the usual reason."
 		.format(missing.join(", "))).warn;
 } {
 	"Cloud is installed.".postln;
